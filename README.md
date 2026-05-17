@@ -23,15 +23,15 @@ docker run --rm ghcr.io/vigor-digital-solution/vigor-cli:latest --help
 
 ## Commands
 
-| Command | What it does |
-|---------|--------------|
-| `vigor scaffold <platform> <name>` | Fetch a template, replace placeholders, `git init` with three-branch model |
-| `vigor scaffold --list` | List available platforms |
-| `vigor audit [path]` | Run the standards audit (10 checks across code-quality / testing / security / deployment / performance) |
-| `vigor audit --json` | Emit a machine-readable JSON report (good for CI) |
-| `vigor doctor` | Verify all six CLIs in the Vigor stack are installed (gh, vercel, railway, supabase, resend, hostinger) plus node, pnpm, git |
-| `vigor upgrade` | Compare installed version against the latest GitHub release; print upgrade instructions |
-| `vigor version` | Print version + commit + build date + Go runtime |
+| Command                            | What it does                                                                                                                 |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `vigor scaffold <platform> <name>` | Fetch a template, replace placeholders, `git init` with three-branch model                                                   |
+| `vigor scaffold --list`            | List available platforms                                                                                                     |
+| `vigor audit [path]`               | Run the standards audit (10 checks across code-quality / testing / security / deployment / performance)                      |
+| `vigor audit --json`               | Emit a machine-readable JSON report (good for CI)                                                                            |
+| `vigor doctor`                     | Verify all six CLIs in the Vigor stack are installed (gh, vercel, railway, supabase, resend, hostinger) plus node, pnpm, git |
+| `vigor upgrade`                    | Compare installed version against the latest GitHub release; print upgrade instructions                                      |
+| `vigor version`                    | Print version + commit + build date + Go runtime                                                                             |
 
 ## Scaffolding
 
@@ -62,7 +62,7 @@ Exit code:
 CI usage:
 
 ```yaml
-- run: vigor audit --fail-on=warn   # stricter: warn or worse fails the build
+- run: vigor audit --fail-on=warn # stricter: warn or worse fails the build
 ```
 
 JSON output for tooling:
@@ -140,11 +140,11 @@ The `release.yml` workflow runs GoReleaser, which:
 
 ## Configuration
 
-| Env var | Default | Purpose |
-|---------|---------|---------|
-| `VIGOR_TEMPLATES_REPO` | `VIGOR-Digital-Solution/vigor-boilerplate` | Source repo for `scaffold` |
-| `VIGOR_TEMPLATES_REF` | `main` | Branch or tag |
-| `VIGOR_INSTALL_DIR` | `/usr/local/bin` | Where `install.sh` puts the binary |
+| Env var                | Default                                    | Purpose                            |
+| ---------------------- | ------------------------------------------ | ---------------------------------- |
+| `VIGOR_TEMPLATES_REPO` | `VIGOR-Digital-Solution/vigor-boilerplate` | Source repo for `scaffold`         |
+| `VIGOR_TEMPLATES_REF`  | `main`                                     | Branch or tag                      |
+| `VIGOR_INSTALL_DIR`    | `/usr/local/bin`                           | Where `install.sh` puts the binary |
 
 ## See also
 
