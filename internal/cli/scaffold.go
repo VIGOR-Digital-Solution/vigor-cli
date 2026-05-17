@@ -52,7 +52,7 @@ Examples:
 
 			template, err := scaffold.Resolve(args[0])
 			if err != nil {
-				return err
+				return fmt.Errorf("resolve template: %w", err)
 			}
 			name := args[1]
 			dest, err := filepath.Abs(name)
@@ -73,7 +73,7 @@ Examples:
 
 			out := cmd.OutOrStdout()
 			fmt.Fprintf(out, "→ Fetching %s template from %s@%s…\n", template.Platform, src.Repo, src.Ref)
-			if err := scaffold.Fetch(src, template, dest); err != nil {
+			if err := scaffold.Fetch(cmd.Context(), src, template, dest); err != nil {
 				return fmt.Errorf("fetch: %w", err)
 			}
 

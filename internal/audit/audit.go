@@ -94,7 +94,10 @@ func (r Report) WriteMarkdown(w io.Writer) {
 func (r Report) WriteJSON(w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
-	return enc.Encode(r)
+	if err := enc.Encode(r); err != nil {
+		return fmt.Errorf("encode audit report: %w", err)
+	}
+	return nil
 }
 
 func escape(s string) string {

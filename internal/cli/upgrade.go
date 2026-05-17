@@ -74,13 +74,13 @@ scoop, or the install script. No phone-home telemetry is sent.`,
 func fetchLatest(ctx context.Context) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, releasesAPI, nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("fetch latest release: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -92,7 +92,7 @@ func fetchLatest(ctx context.Context) (string, error) {
 		TagName string `json:"tag_name"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
-		return "", err
+		return "", fmt.Errorf("decode release payload: %w", err)
 	}
 	if payload.TagName == "" {
 		return "", fmt.Errorf("empty tag_name in response")

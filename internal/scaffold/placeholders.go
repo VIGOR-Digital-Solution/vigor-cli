@@ -21,7 +21,7 @@ func Apply(root string, p Placeholders) error {
 		{"{{PROJECT_NAME}}", p.ProjectName},
 	}
 
-	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	if err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,10 @@ func Apply(root string, p Placeholders) error {
 			return fmt.Errorf("write %s: %w", path, err)
 		}
 		return nil
-	})
+	}); err != nil {
+		return fmt.Errorf("walk %s: %w", root, err)
+	}
+	return nil
 }
 
 // isBinary checks for a null byte in the first 8 KB — same heuristic git uses.

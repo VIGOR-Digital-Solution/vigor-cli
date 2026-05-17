@@ -3,6 +3,7 @@ package scaffold
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -40,7 +41,7 @@ func DefaultSource() Source {
 // Fetch downloads the template subtree from GitHub as a tarball and extracts
 // only the entries under templates/<platform>/ into `dest`. Skips the
 // archive's top-level directory prefix (`<repo>-<sha>/`).
-func Fetch(src Source, template Template, dest string) error {
+func Fetch(ctx context.Context, src Source, template Template, dest string) error {
 	if err := os.MkdirAll(dest, 0o755); err != nil {
 		return fmt.Errorf("create dest: %w", err)
 	}
@@ -48,7 +49,7 @@ func Fetch(src Source, template Template, dest string) error {
 	url := fmt.Sprintf("https://codeload.github.com/%s/tar.gz/%s", src.Repo, src.Ref)
 	client := &http.Client{Timeout: 60 * time.Second}
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("build request: %w", err)
 	}
