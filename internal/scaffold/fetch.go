@@ -3,6 +3,7 @@ package scaffold
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -40,7 +41,7 @@ func DefaultSource() Source {
 // Fetch downloads the template subtree from GitHub as a tarball and extracts
 // only the entries under templates/<platform>/ into `dest`. Skips the
 // archive's top-level directory prefix (`<repo>-<sha>/`).
-func Fetch(src Source, template Template, dest string) error {
+func Fetch(ctx context.Context, src Source, template Template, dest string) error {
 	if err := os.MkdirAll(dest, 0o755); err != nil {
 		return fmt.Errorf("create dest: %w", err)
 	}
@@ -48,7 +49,7 @@ func Fetch(src Source, template Template, dest string) error {
 	url := fmt.Sprintf("https://codeload.github.com/%s/tar.gz/%s", src.Repo, src.Ref)
 	client := &http.Client{Timeout: 60 * time.Second}
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("build request: %w", err)
 	}
@@ -112,11 +113,15 @@ func Fetch(src Source, template Template, dest string) error {
 			if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 				return fmt.Errorf("mkdir parent of %s: %w", full, err)
 			}
-			out, err := os.OpenFile(full, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(hdr.Mode)&0o777)
+			// Bound the per-entry mode (tar Mode is int64; OpenFile takes os.FileMode/uint32).
+			mode := os.FileMode(hdr.Mode & 0o777) //nolint:gosec // bounded by mask
+			out, err := os.OpenFile(full, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
 			if err != nil {
 				return fmt.Errorf("create %s: %w", full, err)
 			}
-			if _, err := io.Copy(out, tr); err != nil {
+			// Cap each entry at 64 MiB; protects against decompression bombs.
+			const maxEntryBytes = 64 << 20
+			if _, err := io.CopyN(out, tr, maxEntryBytes); err != nil && !errors.Is(err, io.EOF) {
 				out.Close()
 				return fmt.Errorf("write %s: %w", full, err)
 			}
