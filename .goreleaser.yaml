@@ -1,0 +1,101 @@
+version: 2
+
+project_name: vigor
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: vigor
+    main: ./cmd/vigor
+    binary: vigor
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ .Tag }}-next"
+
+brews:
+  - name: vigor
+    description: Vigor Digital scaffolder + audit. Mirrors the Claude Code skill surface.
+    homepage: https://github.com/VIGOR-Digital-Solution/vigor-cli
+    license: MIT
+    repository:
+      owner: VIGOR-Digital-Solution
+      name: homebrew-tap
+      branch: main
+    folder: Formula
+    test: |
+      system "#{bin}/vigor", "--version"
+    install: |
+      bin.install "vigor"
+
+scoops:
+  - name: vigor
+    description: Vigor Digital scaffolder + audit.
+    homepage: https://github.com/VIGOR-Digital-Solution/vigor-cli
+    license: MIT
+    repository:
+      owner: VIGOR-Digital-Solution
+      name: scoop-bucket
+      branch: main
+
+dockers:
+  - image_templates:
+      - "ghcr.io/vigor-digital-solution/vigor-cli:{{ .Tag }}-amd64"
+      - "ghcr.io/vigor-digital-solution/vigor-cli:latest-amd64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.source=https://github.com/VIGOR-Digital-Solution/vigor-cli"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+    goarch: amd64
+  - image_templates:
+      - "ghcr.io/vigor-digital-solution/vigor-cli:{{ .Tag }}-arm64"
+      - "ghcr.io/vigor-digital-solution/vigor-cli:latest-arm64"
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    goarch: arm64
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+
+release:
+  github:
+    owner: VIGOR-Digital-Solution
+    name: vigor-cli
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
